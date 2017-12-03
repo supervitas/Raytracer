@@ -1,3 +1,0 @@
-/Users/nikolaev/Projects/C++/Raytracer/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/Users/nikolaev/Projects/C++/Raytracer/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/nikolaev/Projects/C++/Raytracer/cmake-build-debug/CMakeFiles/Raytracer.dir
