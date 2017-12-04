@@ -3,35 +3,54 @@
 //
 
 #include "GL.h"
+#include <cstdlib>
+#include <iostream>
+#include <array>
 
 GL::GL(int width, int height) {
+
     if (!glfwInit()) throw 'Error with creating context';
 
-    window = glfwCreateWindow(width, height, "Raytracer", NULL, NULL);
+    this->width = width;
+    this->height = height;
+
+    window = glfwCreateWindow(width, height, "Raytracer", nullptr, nullptr);
+
 
     if (!window) {
         glfwTerminate();
         throw 'Error with creating window';
     }
-
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
 }
 
 void GL::run() {
+    struct RGBType {
+        float r;
+        float g;
+        float b;
+    };
+
     glfwMakeContextCurrent(window);
 
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window)) {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+    int frameBufferWidth, frameBufferHeight;
+    glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
 
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+    std::unique_ptr<RGBType[]> pixels(new RGBType[frameBufferWidth * frameBufferHeight]);
 
-        /* Poll for and process events */
-        glfwPollEvents();
+    for (int i = 0; i < frameBufferWidth * frameBufferHeight; i++) {
+        pixels[i].r = 1;
+        pixels[i].g = 1;
+        pixels[i].b = 1;
     }
 
+
+    while (!glfwWindowShouldClose(window)) {
+        glDrawPixels(frameBufferWidth, frameBufferHeight, GL_RGB, GL_FLOAT, pixels.get());
+        glClear( GL_COLOR_BUFFER_BIT );
+
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
     glfwTerminate();
 }

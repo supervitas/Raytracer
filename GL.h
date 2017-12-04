@@ -11,6 +11,8 @@
 class GL {
 private:
     GLFWwindow *window;
+    int width;
+    int height;
 
 public:
     GL(int width = 640, int height = 480);
