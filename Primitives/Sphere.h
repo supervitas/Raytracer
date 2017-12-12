@@ -8,7 +8,6 @@
 
 #include "../Vec3.h"
 
-typedef Vec3<float> Vec3f;
 class Sphere {
 public:
     Vec3f center;                           /// position of the sphere
@@ -25,8 +24,7 @@ public:
             center(c), radius(r), radius2(r * r), surfaceColor(sc), emissionColor(ec),
             transparency(transp), reflection(refl) {}
 
-    bool intersect(const Vec3f &rayorig, const Vec3f &raydir, float &t0, float &t1) const
-    {
+    bool intersect(const Vec3f &rayorig, const Vec3f &raydir, float &t0, float &t1) const {
         Vec3f l = center - rayorig;
         float tca = l.dot(raydir);
         if (tca < 0) return false;

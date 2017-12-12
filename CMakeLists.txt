@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(OpenGL REQUIRED)
 
-set(SOURCE_FILES main.cpp GL.cpp GL.h Vec3.h Primitives/Sphere.h Renderer/Raytracer.h)
+set(SOURCE_FILES main.cpp GL.cpp GL.h Vec3.h Primitives/Sphere.h Renderer/Raytracer.h Renderer/Raytracer.cpp)
 add_executable(Raytracer ${SOURCE_FILES})
 
 target_link_libraries(Raytracer glfw ${GLFW_LIBRARIES} ${OPENGL_LIBRARY})
