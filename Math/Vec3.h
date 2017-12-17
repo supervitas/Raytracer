@@ -15,25 +15,13 @@ public:
     T x, y, z;
 
     Vec3(T x, T y, T z) : x(x), y(y), z(z) {}
-    Vec3() : x(T(0)), y(T(0)), z(T(0)) {}
-    Vec3(T xx) : x(xx), y(xx), z(xx) {}
+    Vec3() : x(T(0)), y(T(0)), z(T(0)) {};
 
-    T length2() const { return x * x + y * y + z * z; }
-    T length() const { return sqrt(length2()); }
 
-    Vec3& normalize()
-    {
-        T nor2 = length2();
-        if (nor2 > 0) {
-            T invNor = 1 / sqrt(nor2);
-            x *= invNor, y *= invNor, z *= invNor;
-        }
-        return *this;
-    }
 
+    T dot(const Vec3<T> &v) const { return x * v.x + y * v.y + z * v.z; }
     Vec3<T> operator * (const T &f) const { return Vec3<T>(x * f, y * f, z * f); }
     Vec3<T> operator * (const Vec3<T> &v) const { return Vec3<T>(x * v.x, y * v.y, z * v.z); }
-    T dot(const Vec3<T> &v) const { return x * v.x + y * v.y + z * v.z; }
     Vec3<T> operator - (const Vec3<T> &v) const { return Vec3<T>(x - v.x, y - v.y, z - v.z); }
     Vec3<T> operator + (const Vec3<T> &v) const { return Vec3<T>(x + v.x, y + v.y, z + v.z); }
     Vec3<T>& operator += (const Vec3<T> &v) { x += v.x, y += v.y, z += v.z; return *this; }
@@ -42,5 +30,6 @@ public:
 };
 
 typedef Vec3<float> Vec3f;
+typedef Vec3<int> Vec3i;
 
 #endif //RAYTRACER_VEC3_H

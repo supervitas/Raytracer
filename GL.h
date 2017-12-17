@@ -2,7 +2,7 @@
 #define RAYTRACER_GL_H
 
 #include <GLFW/glfw3.h>
-#include "Vec3.h"
+#include "Math/Vec3.h"
 
 class GL {
 private:
