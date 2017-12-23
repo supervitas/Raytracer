@@ -7,14 +7,15 @@
 
 
 #include "../Math/Vec3.h"
+#include "Renderable.h"
 
-class Sphere {
+class Sphere : public Renderable {
 public:
     Vec3f center;
     float radius;
-    Vec3i color;
 
-    Sphere(Vec3f &Center, float Radius, Vec3i &Color) : center(Center), radius(Radius), color(Color) {};
+    Sphere(Vec3f Center, float Radius, Vec3i Color);
+    bool intersects();
 
 
 };

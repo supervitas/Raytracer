@@ -4,7 +4,7 @@
 
 #include "Raytracer.h"
 
-Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight) {
+Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, Camera &Camera): scene(Scene), camera(Camera) {
     this->frameBufferHeight = frameBufferHeight;
     this->frameBufferWidth = frameBufferWidth;
 }
@@ -14,6 +14,13 @@ Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight) {
 std::shared_ptr<Vec3f> Raytracer::render() {
     std::shared_ptr<Vec3f> image(new Vec3f[frameBufferWidth * frameBufferHeight], std::default_delete<Vec3f[]>());
 
+    for (int i = 0; i < frameBufferHeight; i++) {
+        for (int j = 0; j < frameBufferWidth; j++) {
+//            for (auto &renderable : scene.renderables) {
+//
+//            }
+        }
+    }
+
     return image;
 }
-

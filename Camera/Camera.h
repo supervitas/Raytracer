@@ -14,7 +14,8 @@ public:
     Vec3f direction;
     float fov;
 
-    Camera(Vec3f &position, Vec3f &direction, float fov = 60);
+    Camera(Vec3f position, Vec3f direction, float fov = 60);
+
 
 };
 
