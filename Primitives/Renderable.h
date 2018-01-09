@@ -10,8 +10,9 @@
 
 class Renderable {
 public:
-    Vec3i color;
-    virtual bool intersects() = 0;
+    Vec3f color;
+    float opacity = 1;
+    virtual bool intersects(const Vec3f &rayorig, const Vec3f &raydir, float &t0, float &t1) const = 0;
 };
 
 

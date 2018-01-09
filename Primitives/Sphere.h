@@ -12,12 +12,13 @@
 class Sphere : public Renderable {
 public:
     Vec3f center;
+    float radius2;
     float radius;
 
-    Sphere(Vec3f Center, float Radius, Vec3i Color);
-    bool intersects();
+    Sphere(Vec3f Center, float Radius, Vec3f Color);
 
 
+    bool intersects(const Vec3f &rayorig, const Vec3f &raydir, float &t0, float &t1) const;
 };
 
 

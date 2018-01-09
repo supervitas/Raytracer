@@ -17,7 +17,24 @@ public:
     Vec3(T x, T y, T z) : x(x), y(y), z(z) {}
     Vec3() : x(T(0)), y(T(0)), z(T(0)) {};
 
+    Vec3& normalize() {
+        T nor2 = length2();
+        if (nor2 > 0) {
+            T invNor = 1 / sqrt(nor2);
+            x *= invNor, y *= invNor, z *= invNor;
+        }
+        return *this;
+    }
 
+
+    T length2() const {
+        return x * x + y * y + z * z;
+    }
+
+    friend std::ostream & operator << (std::ostream &os, const Vec3<T> &v) {
+        os << "[" << v.x << " " << v.y << " " << v.z << "]";
+        return os;
+    }
 
     T dot(const Vec3<T> &v) const { return x * v.x + y * v.y + z * v.z; }
     Vec3<T> operator * (const T &f) const { return Vec3<T>(x * f, y * f, z * f); }
