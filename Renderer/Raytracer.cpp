@@ -2,15 +2,18 @@
 // Created by Виталий on 12.12.2017.
 //
 
+#include <thread>
 #include "Raytracer.h"
 
-Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, Camera &Camera): scene(Scene), camera(Camera) {
+Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, Camera &Camera, TaskManager &taskManager)
+        : scene(Scene), camera(Camera), taskManager(taskManager) {
+
     this->frameBufferHeight = frameBufferHeight;
     this->frameBufferWidth = frameBufferWidth;
 
     this->aspectRatio = frameBufferWidth / frameBufferHeight;
-    this->invHeight = 1 / float(frameBufferHeight);
-    this->invWidth = 1 / float(frameBufferWidth);
+    this->invHeight = 1 / static_cast<float>(frameBufferHeight);
+    this->invWidth = 1 / static_cast<float>(frameBufferWidth);
 
     this->angle = camera.angle;
 }
@@ -18,7 +21,7 @@ Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, 
 Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, const int & depth) {
     Renderable *renderable = nullptr;
 
-    auto result = Vec3f(0.1,0.1,0.1);
+    auto result = Vec3f(0.1, 0.1, 0.1);
 
     float tnear = INFINITY;
 
@@ -45,26 +48,36 @@ Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, c
 }
 
 
-
 std::shared_ptr<Vec3f> Raytracer::render() {
     std::shared_ptr<Vec3f> image(new Vec3f[frameBufferWidth * frameBufferHeight], std::default_delete<Vec3f[]>());
     auto ptr = image.get();
 
-    for (int i = 0; i < frameBufferHeight; i++) {
-        for (int j = 0; j < frameBufferWidth; j++) {
+    auto heightPerThread = frameBufferHeight / taskManager.concurentThreads;
 
-            auto x = static_cast<float>((2 * ((j + 0.5) * invWidth) - 1) * angle * aspectRatio);
-            auto y = static_cast<float>((1 - 2 * ((i + 0.5) * invHeight)) * angle);
+    for (int threads = 0; threads < taskManager.concurentThreads; threads++) {
+        std::function<void()> job = [this, ptr, threads, heightPerThread] {
+            auto startHeight = heightPerThread * threads;
+            auto endHeight = startHeight + heightPerThread;
 
-            Vec3f raydir(x, y, -1);
-            raydir.normalize();
+            for (int i = startHeight; i < endHeight; i++) {
+                for (int j = 0; j < frameBufferWidth; j++) {
+                    auto x = static_cast<float>((2 * ((j + 0.5) * invWidth) - 1) * angle * aspectRatio);
+                    auto y = static_cast<float>((1 - 2 * ((i + 0.5) * invHeight)) * angle);
 
-            auto pixel = trace(camera.position, raydir, 0);
+                    Vec3f raydir(x, y, -1);
+                    raydir.normalize();
 
-            ptr[i * frameBufferWidth + j] = pixel;
+                    auto pixel = trace(camera.position, raydir, 0);
 
-        }
+                    ptr[i * frameBufferWidth + j] = pixel;
+                }
+            }
+        };
+
+        taskManager.AddTask(job);
     }
+
+    taskManager.waitAll();
 
     return image;
 }

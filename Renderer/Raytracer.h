@@ -12,6 +12,7 @@
 #include "../Primitives/Sphere.h"
 #include "../Scene/Scene.h"
 #include "../Camera/Camera.h"
+#include "../TaskManager/TaskManager.h"
 
 #define MAX_RAY_DEPTH 5
 
@@ -26,9 +27,10 @@ private:
 
     Scene &scene;
     Camera &camera;
+    TaskManager &taskManager;
 
 public:
-    Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &scene, Camera &camera);
+    Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &scene, Camera &camera,  TaskManager &taskManager);
     std::shared_ptr<Vec3f> render();
 
 private:
