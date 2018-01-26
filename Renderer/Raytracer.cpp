@@ -39,12 +39,36 @@ Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, c
         }
     }
 
-    if (renderable) {
-        result = renderable->color;
+    if (!renderable) return result;
+
+    Vec3f phit = cameraPosition + rayDirection * tnear; // point of intersection
+    Vec3f nhit = phit - renderable->center; // normal at the intersection point
+    nhit.normalize();
+    float bias = 1e-4; // add some bias to the point from which we will be tracing
+
+    auto surfaceColor = Vec3f();
+
+    for (Renderable *&sceneObject : scene.renderables) {
+            // this is a light
+//            Vec3f transmission();
+            Vec3f lightDirection = sceneObject->center - phit;
+            lightDirection.normalize();
+            for (Renderable *&sceneObjectNested : scene.renderables) {
+                if (sceneObject != sceneObjectNested) {
+                    float t0, t1;
+                    if (sceneObjectNested->intersects(phit + nhit * bias, lightDirection, t0, t1)) {
+//                        transmission = 0;
+                        break;
+                    }
+                }
+            }
+            surfaceColor += sceneObject->color  *
+                            std::max(float(0), nhit.dot(lightDirection)) * sceneObject->color;
+
     }
 
 
-    return result;
+    return surfaceColor + renderable->color;
 }
 
 

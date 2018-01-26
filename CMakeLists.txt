@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(OpenGL REQUIRED)
 
-set(SOURCE_FILES main.cpp GL.cpp GL.h Math/Vec3.h Primitives/Sphere.h Renderer/Raytracer.h Renderer/Raytracer.cpp Camera/Camera.cpp Camera/Camera.h Scene/Scene.cpp Scene/Scene.h Primitives/Renderable.h Primitives/Sphere.cpp TaskManager/TaskManager.cpp TaskManager/TaskManager.h)
+set(SOURCE_FILES main.cpp GL.cpp GL.h Math/Vec3.h Primitives/Sphere.h Renderer/Raytracer.h Renderer/Raytracer.cpp Camera/Camera.cpp Camera/Camera.h Scene/Scene.cpp Scene/Scene.h Primitives/Renderable.h Primitives/Sphere.cpp TaskManager/TaskManager.cpp TaskManager/TaskManager.h Lights/Light.cpp Lights/Light.h)
 add_executable(Raytracer ${SOURCE_FILES})
 
 target_link_libraries(Raytracer glfw ${GLFW_LIBRARIES} ${OPENGL_LIBRARY})

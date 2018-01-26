@@ -12,6 +12,7 @@ class Renderable {
 public:
     Vec3f color;
     float opacity = 1;
+    Vec3f center;
     virtual bool intersects(const Vec3f &rayorig, const Vec3f &raydir, float &t0, float &t1) const = 0;
 };
 

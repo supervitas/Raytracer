@@ -7,3 +7,7 @@
 void Scene::Add(Renderable &renderable) {
     renderables.push_back(&renderable);
 }
+
+void Scene::AddLight(Light &light) {
+    lights.push_back(&light);
+}

@@ -8,11 +8,15 @@
 
 #include <vector>
 #include "../Primitives/Renderable.h"
+#include "../Lights/Light.h"
 
 class Scene {
 public:
+    std::vector<Light*> lights;
     std::vector<Renderable*> renderables;
+
     void Add(Renderable &renderable);
+    void AddLight(Light &light);
 };
 
 

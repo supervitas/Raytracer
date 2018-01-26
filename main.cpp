@@ -5,6 +5,7 @@
 #include "Camera/Camera.h"
 #include "Scene/Scene.h"
 #include "TaskManager/TaskManager.h"
+#include "Lights/Light.h"
 
 
 int main() {
@@ -14,10 +15,13 @@ int main() {
 
     std::shared_ptr<TaskManager> taskManager(new TaskManager);
 
-    std::shared_ptr<Sphere> sphere(new Sphere(Vec3f(-5.5f, 0, -25), 3, Vec3f(140, 140, 200)));
+    std::shared_ptr<Sphere> sphere(new Sphere(Vec3f(-5.5f, 0, -25), 3, Vec3f(0, 240, 0)));
+
+    std::shared_ptr<Light> light(new Light(Vec3f(-5.5f, 5, 0), 0.78));
 
 
     scene->Add(*sphere);
+    scene->AddLight(*light);
 
 
     auto raytracer = Raytracer(gl->frameBufferWidth, gl->frameBufferHeight, *scene, *camera, *taskManager);
