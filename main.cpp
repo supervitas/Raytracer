@@ -1,5 +1,5 @@
 #include <vector>
-#include "GL.h"
+#include "GL/GL.h"
 #include "Primitives/Sphere.h"
 #include "Renderer/Raytracer.h"
 #include "Camera/Camera.h"
@@ -26,9 +26,12 @@ int main() {
 
     auto raytracer = Raytracer(gl->frameBufferWidth, gl->frameBufferHeight, *scene, *camera, *taskManager);
 
-    auto image = raytracer.render();
+    while (!glfwWindowShouldClose(gl->window)) {
+        auto image = raytracer.render();
+        gl->renderToScreen(image);
+    }
 
-    gl->renderToScreen(image);
+    glfwTerminate();
 
     return 0;
 }

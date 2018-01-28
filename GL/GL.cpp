@@ -18,12 +18,9 @@ GL::GL(int width, int height) {
 }
 
 void GL::renderToScreen(std::shared_ptr<Vec3f> renderTargetPixels) {
-    while (!glfwWindowShouldClose(window)) {
-        glClear( GL_COLOR_BUFFER_BIT );
-        glDrawPixels(frameBufferWidth, frameBufferHeight, GL_RGB, GL_FLOAT, renderTargetPixels.get());
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDrawPixels(frameBufferWidth, frameBufferHeight, GL_RGB, GL_FLOAT, renderTargetPixels.get());
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-    glfwTerminate();
+    glfwSwapBuffers(window);
+    glfwPollEvents();
 }
