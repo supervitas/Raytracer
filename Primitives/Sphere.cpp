@@ -19,9 +19,10 @@ bool Sphere::intersects(const Vec3f &rayorig, const Vec3f &raydir, float &t0, fl
 
 }
 
-Sphere::Sphere(Vec3f Center, float Radius, Vec3f Color) {
-    this->center = Center;
-    this->radius = Radius;
-    this->color = Vec3f(Color.x / 255, Color.y / 255, Color.z / 255);
-    this->radius2 = Radius * Radius;
+Sphere::Sphere(Vec3f center, float radius, Vec3f color, Vec3f emissionColor, float opacity, float reflectivity) {
+    this->center = center;
+    this->radius = radius;
+    this->color = Vec3f(color.x / 255, color.y / 255, color.z / 255);
+    this->radius2 = radius * radius;
+    this->emissionColor = Vec3f(emissionColor.x / 255, emissionColor.y / 255, emissionColor.z / 255);
 }

@@ -15,7 +15,7 @@ int main() {
 
     std::shared_ptr<TaskManager> taskManager(new TaskManager);
 
-    std::shared_ptr<Sphere> sphere(new Sphere(Vec3f(-5.5f, 0, -25), 3, Vec3f(0, 240, 0)));
+    std::shared_ptr<Sphere> sphere(new Sphere(Vec3f(-5.5f, 0, -25), 3, Vec3f(0, 240, 0), Vec3f(100, 40, 5), 0.7, 0.3));
 
     std::shared_ptr<Light> light(new Light(Vec3f(-5.5f, 5, 0), 0.78));
 

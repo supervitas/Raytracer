@@ -49,26 +49,31 @@ Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, c
     auto surfaceColor = Vec3f();
 
     for (Renderable *&sceneObject : scene.renderables) {
-            // this is a light
-//            Vec3f transmission();
+        if (sceneObject->emissionColor.x > 0) {
+
+            auto transmission = Vec3f(1,1,1);
             Vec3f lightDirection = sceneObject->center - phit;
             lightDirection.normalize();
             for (Renderable *&sceneObjectNested : scene.renderables) {
                 if (sceneObject != sceneObjectNested) {
                     float t0, t1;
                     if (sceneObjectNested->intersects(phit + nhit * bias, lightDirection, t0, t1)) {
-//                        transmission = 0;
+                        transmission.x = 0;
+                        transmission.y = 0;
+                        transmission.z = 0;
+
                         break;
                     }
                 }
             }
-            surfaceColor += sceneObject->color  *
-                            std::max(float(0), nhit.dot(lightDirection)) * sceneObject->color;
+            surfaceColor += sceneObject->color * transmission *
+                            std::max(float(0), nhit.dot(lightDirection)) * sceneObject->emissionColor;
 
+        }
     }
 
 
-    return surfaceColor + renderable->color;
+    return surfaceColor + renderable->emissionColor;
 }
 
 
@@ -78,9 +83,9 @@ std::shared_ptr<Vec3f> Raytracer::render() {
 
     auto heightPerThread = frameBufferHeight / taskManager.concurentThreads;
 
-    for (int threads = 0; threads < taskManager.concurentThreads; threads++) {
-        std::function<void()> job = [this, ptr, threads, heightPerThread] {
-            auto startHeight = heightPerThread * threads;
+    for (int threadsNumber = 0; threadsNumber < taskManager.concurentThreads; threadsNumber++) {
+        std::function<void()> job = [this, ptr, threadsNumber, heightPerThread] {
+            auto startHeight = heightPerThread * threadsNumber;
             auto endHeight = startHeight + heightPerThread;
 
             for (int i = startHeight; i < endHeight; i++) {
