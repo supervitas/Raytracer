@@ -5,6 +5,10 @@
 #include <thread>
 #include "Raytracer.h"
 
+float mix(const float &a, const float &b, const float &mix) {
+    return b * mix + a * (1 - mix);
+}
+
 Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, Camera &Camera, TaskManager &taskManager)
         : scene(Scene), camera(Camera), taskManager(taskManager) {
 
@@ -28,7 +32,6 @@ Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, c
     for (Renderable *&sceneObject : scene.renderables) {
         float t0 = INFINITY, t1 = INFINITY;
 
-
         if (sceneObject->intersects(cameraPosition, rayDirection, t0, t1)) {
             if (t0 < 0) t0 = t1;
 
@@ -46,34 +49,33 @@ Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, c
     nhit.normalize();
     float bias = 1e-4; // add some bias to the point from which we will be tracing
 
+
     auto surfaceColor = Vec3f();
 
     for (Renderable *&sceneObject : scene.renderables) {
-        if (sceneObject->emissionColor.x > 0) {
 
-            auto transmission = Vec3f(1,1,1);
-            Vec3f lightDirection = sceneObject->center - phit;
+        for (Light *&light : scene.lights) {
+            auto transmission = Vec3f(1, 1, 1);
+
+            Vec3f lightDirection = light->position - phit;
             lightDirection.normalize();
-            for (Renderable *&sceneObjectNested : scene.renderables) {
-                if (sceneObject != sceneObjectNested) {
-                    float t0, t1;
-                    if (sceneObjectNested->intersects(phit + nhit * bias, lightDirection, t0, t1)) {
-                        transmission.x = 0;
-                        transmission.y = 0;
-                        transmission.z = 0;
 
-                        break;
-                    }
-                }
+            float t0, t1;
+            if (sceneObject->intersects(phit + nhit * bias, lightDirection, t0, t1)) {
+                transmission.x = 0;
+                transmission.y = 0;
+                transmission.z = 0;
+
+                break;
             }
-            surfaceColor += sceneObject->color * transmission *
-                            std::max(float(0), nhit.dot(lightDirection)) * sceneObject->emissionColor;
 
+            surfaceColor += sceneObject->color * transmission *
+                            std::max(float(0), nhit.dot(lightDirection)) * light->color;
         }
     }
 
 
-    return surfaceColor + renderable->emissionColor;
+    return surfaceColor;
 }
 
 
