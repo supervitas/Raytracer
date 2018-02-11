@@ -40,3 +40,14 @@ int main() {
 
     return 0;
 }
+
+void saveImage(GL *gl,  Vec3<float> * pik) {
+    std::ofstream ofs("./untitled.ppm", std::ios::out | std::ios::binary);
+    ofs << "P6\n" << gl->frameBufferWidth << " " << gl->frameBufferHeight << "\n255\n";
+    for (unsigned i = 0; i < gl->frameBufferWidth  * gl->frameBufferHeight; i++) {
+        ofs << (unsigned char)(std::min(float(1),pik[i].x) * 255) <<
+            (unsigned char)(std::min(float(1), pik[i].y) * 255) <<
+            (unsigned char)(std::min(float(1), pik[i].z) * 255);
+    }
+    ofs.close();
+}
