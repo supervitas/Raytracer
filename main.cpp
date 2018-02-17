@@ -36,7 +36,6 @@ int main() {
         gl->renderToScreen(image);
     }
 
-    glfwTerminate();
 
     return 0;
 }
