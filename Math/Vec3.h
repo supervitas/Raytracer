@@ -26,7 +26,6 @@ public:
         return *this;
     }
 
-
     T length2() const {
         return x * x + y * y + z * z;
     }
@@ -47,6 +46,5 @@ public:
 };
 
 typedef Vec3<float> Vec3f;
-typedef Vec3<int> Vec3i;
 
 #endif //RAYTRACER_VEC3_H

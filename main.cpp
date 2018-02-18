@@ -9,17 +9,19 @@
 
 
 int main() {
-    std::shared_ptr<GL> gl(new GL);
-    std::shared_ptr<Scene> scene(new Scene);
-    std::shared_ptr<Camera> camera(new Camera(Vec3f(), Vec3f(0, 0, 1), 60));
+    auto taskManager = std::make_unique<TaskManager>();
 
-    std::shared_ptr<TaskManager> taskManager(new TaskManager);
+    auto gl = std::make_unique<GL>();
+    auto scene = std::make_unique<Scene>();
+    auto camera = std::make_unique<Camera>(Vec3f(), Vec3f(0, 0, 1), 60);
 
-    std::shared_ptr<Sphere> sphere(new Sphere(Vec3f(-5.5f, 0, -25), 3, Vec3f(0, 240, 0), 0.7, 0.3));
-    std::shared_ptr<Sphere> sphere2(new Sphere(Vec3f(2.5f, 0, -25), 3, Vec3f(100, 240, 0), 0.3, 0.9));
-    std::shared_ptr<Sphere> sphere3(new Sphere(Vec3f(0, 20, -25), 15, Vec3f(10, 120, 150), 0.3, 0.9));
+    auto raytracer = std::make_unique<Raytracer>(gl->frameBufferWidth, gl->frameBufferHeight, *scene, *camera, *taskManager);
 
-    std::shared_ptr<Light> light(new Light(Vec3f(0, 20, -30), 0.78, Vec3f(255, 255, 255)));
+    auto sphere = std::make_unique<Sphere>(Vec3f(-5.5f, 0, -25), 3, Vec3f(0, 240, 0), 0.7, 0.3);
+    auto sphere2 = std::make_unique<Sphere>(Vec3f(2.5f, 0, -25), 3, Vec3f(100, 240, 0), 0.3, 0.9);
+    auto sphere3 = std::make_unique<Sphere>(Vec3f(0, 20, -25), 15, Vec3f(10, 120, 150), 0.3, 0.9);
+
+    auto light = std::make_unique<Light>(Vec3f(0, 15, -30), 0.78, Vec3f(255, 255, 255));
 
 
     scene->Add(*sphere);
@@ -29,24 +31,13 @@ int main() {
     scene->AddLight(*light);
 
 
-    auto raytracer = Raytracer(gl->frameBufferWidth, gl->frameBufferHeight, *scene, *camera, *taskManager);
+    std::vector<Vec3f> image;
+    image.reserve(gl->frameBufferWidth * gl->frameBufferHeight);
 
     while (!glfwWindowShouldClose(gl->window)) {
-        auto image = raytracer.render();
+        raytracer->render(image);
         gl->renderToScreen(image);
     }
 
-
     return 0;
-}
-
-void saveImage(GL *gl,  Vec3<float> * pik) {
-    std::ofstream ofs("./untitled.ppm", std::ios::out | std::ios::binary);
-    ofs << "P6\n" << gl->frameBufferWidth << " " << gl->frameBufferHeight << "\n255\n";
-    for (unsigned i = 0; i < gl->frameBufferWidth  * gl->frameBufferHeight; i++) {
-        ofs << (unsigned char)(std::min(float(1),pik[i].x) * 255) <<
-            (unsigned char)(std::min(float(1), pik[i].y) * 255) <<
-            (unsigned char)(std::min(float(1), pik[i].z) * 255);
-    }
-    ofs.close();
 }

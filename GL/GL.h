@@ -11,7 +11,7 @@ private:
     GLuint fullScreenQuad;
     GLuint texture;
     GLuint vao, vbo, ibo;
-    GLint texture_location;
+    GLint textureLocation;
 public:
     GL(int width = 640, int height = 480);
     ~GL();
@@ -19,10 +19,11 @@ public:
     GLFWwindow *window;
     int frameBufferWidth;
     int frameBufferHeight;
-    void renderToScreen(std::shared_ptr<Vec3f> result);
+    void renderToScreen(const std::vector<Vec3f> &renderTargetPixels);
 
 private:
     GLuint loadShader(const GLchar *vertexPath, const GLchar *fragmentPath);
+    void setUpFullScreenQuad();
 };
 
 

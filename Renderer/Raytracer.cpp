@@ -79,14 +79,11 @@ Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, c
 }
 
 
-std::shared_ptr<Vec3f> Raytracer::render() {
-    std::shared_ptr<Vec3f> image(new Vec3f[frameBufferWidth * frameBufferHeight], std::default_delete<Vec3f[]>());
-    auto ptr = image.get();
-
+void Raytracer::render(std::vector<Vec3f> &image) {
     auto heightPerThread = frameBufferHeight / taskManager.concurentThreads;
 
     for (int threadsNumber = 0; threadsNumber < taskManager.concurentThreads; threadsNumber++) {
-        std::function<void()> job = [this, ptr, threadsNumber, heightPerThread] {
+        std::function<void()> job = [this, &image, threadsNumber, heightPerThread] {
             auto startHeight = heightPerThread * threadsNumber;
             auto endHeight = startHeight + heightPerThread;
 
@@ -98,9 +95,7 @@ std::shared_ptr<Vec3f> Raytracer::render() {
                     Vec3f raydir(x, y, -1);
                     raydir.normalize();
 
-                    auto pixel = trace(camera.position, raydir, 0);
-
-                    ptr[i * frameBufferWidth + j] = pixel;
+                    image[i * frameBufferWidth + j] = trace(camera.position, raydir, 0);
                 }
             }
         };
@@ -109,6 +104,4 @@ std::shared_ptr<Vec3f> Raytracer::render() {
     }
 
     taskManager.waitAll();
-
-    return image;
 }

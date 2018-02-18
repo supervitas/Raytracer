@@ -31,7 +31,7 @@ private:
 
 public:
     Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &scene, Camera &camera,  TaskManager &taskManager);
-    std::shared_ptr<Vec3f> render();
+    void render(std::vector<Vec3f> &image);
 
 private:
     Vec3f trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, const int &depth);
