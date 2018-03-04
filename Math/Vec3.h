@@ -15,6 +15,7 @@ public:
     T x, y, z;
 
     Vec3(T x, T y, T z) : x(x), y(y), z(z) {}
+    Vec3(T xx) : x(xx), y(xx), z(xx) {}
     Vec3() : x(T(0)), y(T(0)), z(T(0)) {};
 
     Vec3& normalize() {
@@ -23,6 +24,14 @@ public:
             T invNor = 1 / sqrt(nor2);
             x *= invNor, y *= invNor, z *= invNor;
         }
+        return *this;
+    }
+
+    Vec3& set(T x, T y, T z) {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+
         return *this;
     }
 

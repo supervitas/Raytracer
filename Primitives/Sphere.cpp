@@ -25,3 +25,6 @@ Sphere::Sphere(Vec3f center, float radius, Vec3f color, float opacity, float ref
     this->opacity = opacity;
     this->reflectivity = reflectivity;
 }
+
+Sphere::~Sphere() {
+}

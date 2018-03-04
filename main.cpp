@@ -17,16 +17,23 @@ int main() {
 
     auto raytracer = std::make_unique<Raytracer>(gl->frameBufferWidth, gl->frameBufferHeight, *scene, *camera, *taskManager);
 
-    auto sphere = std::make_unique<Sphere>(Vec3f(-5.5f, 0, -25), 3, Vec3f(0, 240, 0), 0.7, 0.3);
-    auto sphere2 = std::make_unique<Sphere>(Vec3f(2.5f, 0, -25), 3, Vec3f(100, 240, 0), 0.3, 0.9);
-    auto sphere3 = std::make_unique<Sphere>(Vec3f(0, 20, -25), 15, Vec3f(10, 120, 150), 0.3, 0.9);
 
-    auto light = std::make_unique<Light>(Vec3f(0, 15, -30), 0.78, Vec3f(255, 255, 255));
+    auto sphere = std::make_unique<Sphere>(Vec3f(5.0, -1, -15), 2, Vec3f(255, 100, 120), 0.0, 1);
+    auto sphere2 = std::make_unique<Sphere>(Vec3f(0.0, 0, -20), 4, Vec3f(230, 180, 60), 0.5, 1);
+    auto sphere3 = std::make_unique<Sphere>(Vec3f(5.0,      0, -25), 3, Vec3f(90, 150, 245), 0, 1);
+    auto sphere4 = std::make_unique<Sphere>(Vec3f(-5.5f, 0, -15), 3, Vec3f(240, 240, 240), 0, 1);
+
+    auto bigSphere = std::make_unique<Sphere>(Vec3f(0.0, -10004, -20), 10000, Vec3f(100, 100, 100), 0, 0);
+
+
+    auto light = std::make_unique<Light>(Vec3f(0, 15, 0), 1, Vec3f(255, 255, 255));
 
 
     scene->Add(*sphere);
     scene->Add(*sphere2);
     scene->Add(*sphere3);
+    scene->Add(*sphere4);
+    scene->Add(*bigSphere);
 
     scene->AddLight(*light);
 
@@ -38,6 +45,7 @@ int main() {
         raytracer->render(image);
         gl->renderToScreen(image);
     }
+
 
     return 0;
 }

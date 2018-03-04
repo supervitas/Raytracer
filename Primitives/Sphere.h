@@ -17,6 +17,7 @@ public:
     Vec3f center;
 
     Sphere(Vec3f center, float radius, Vec3f color, float opacity, float reflectivity);
+    ~Sphere();
 
 
     bool intersects(const Vec3f &rayorig, const Vec3f &raydir, float &t0, float &t1) const;

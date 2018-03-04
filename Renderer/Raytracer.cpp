@@ -22,10 +22,9 @@ Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, 
     this->angle = camera.angle;
 }
 
-Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, const int & depth) {
+Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, const int &depth) {
     Renderable *renderable = nullptr;
 
-    auto result = Vec3f(0.1, 0.1, 0.1);
 
     float tnear = INFINITY;
 
@@ -42,40 +41,62 @@ Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, c
         }
     }
 
-    if (!renderable) return result;
-
-    Vec3f phit = cameraPosition + rayDirection * tnear; // point of intersection
-    Vec3f nhit = phit - renderable->center; // normal at the intersection point
-    nhit.normalize();
-    float bias = 1e-4; // add some bias to the point from which we will be tracing
+    if (!renderable ) return Vec3f(2);
 
 
-    auto surfaceColor = Vec3f();
+    Vec3f result = 0;
 
-    for (Renderable *&sceneObject : scene.renderables) {
+    Vec3f hit = cameraPosition + rayDirection * tnear;
+    Vec3f normal = (hit - renderable->center).normalize();
+    bool inside = false;
 
-        for (Light *&light : scene.lights) {
-            auto transmission = Vec3f(1, 1, 1);
+    float bias = 1e-4;
 
-            Vec3f lightDirection = light->position - phit;
-            lightDirection.normalize();
-
-            float t0, t1;
-            if (sceneObject->intersects(phit + nhit * bias, lightDirection, t0, t1)) {
-                transmission.x = 0;
-                transmission.y = 0;
-                transmission.z = 0;
-
-                break;
-            }
-
-            surfaceColor += sceneObject->color * transmission *
-                            std::max(float(0), nhit.dot(lightDirection)) * light->color;
-        }
+    if (rayDirection.dot(normal) > 0) {
+        normal = -normal;
+        inside = true;
     }
 
+    if ((renderable->opacity > 0 || renderable->reflectivity > 0) && depth < MAX_RAY_DEPTH) {
+        float facingratio = -rayDirection.dot(normal);
+        float fresneleffect = mix(static_cast<const float &>(pow(1 - facingratio, 3)), 1, 0.1);
 
-    return surfaceColor;
+        Vec3f refldir = rayDirection - normal * 2 * rayDirection.dot(normal);
+        refldir.normalize();
+
+//        Vec3f reflection = renderable->reflectivity > 0 ? trace(hit + normal * bias, refldir, depth + 1) : 0;
+        Vec3f reflection = 0;
+        Vec3f refraction = 0;
+
+        if (renderable->opacity > 0) {
+            float ior = 1.1, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface?
+            float cosi = -normal.dot(rayDirection);
+            float k = 1 - eta * eta * (1 - cosi * cosi);
+            Vec3f refrdir = rayDirection * eta + normal * (eta *  cosi - sqrt(k));
+            refrdir.normalize();
+            refraction = trace(hit - normal * bias, refrdir, depth + 1);
+        }
+        // the result is a mix of reflection and refraction (if the sphere is transparent)
+        result = (reflection * fresneleffect + refraction * (1 - fresneleffect) * renderable->opacity) * renderable->color;
+    }
+
+    for (Light *&light : scene.lights) {
+        Vec3f transmission = 1;
+        Vec3f lightDirection = (light->position - hit).normalize();
+
+        for (Renderable *&sceneObject : scene.renderables) {
+            float t0, t1;
+            if (sceneObject->intersects(hit + normal * bias, lightDirection, t0, t1)) {
+                transmission = 0;
+                break;
+            }
+        }
+
+        result += renderable->color * transmission *
+                  std::max(float(0), normal.dot(lightDirection)) * light->color * light->intencity;
+    }
+
+    return result;
 }
 
 
