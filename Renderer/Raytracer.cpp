@@ -5,9 +5,6 @@
 #include <thread>
 #include "Raytracer.h"
 
-float mix(const float &a, const float &b, const float &mix) {
-    return b * mix + a * (1 - mix);
-}
 
 Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, Camera &Camera, TaskManager &taskManager)
         : scene(Scene), camera(Camera), taskManager(taskManager) {
@@ -22,81 +19,101 @@ Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, 
     this->angle = camera.angle;
 }
 
-Vec3f Raytracer::trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, const int &depth) {
-    Renderable *renderable = nullptr;
+bool Raytracer::trace(
+        const Vec3f &orig, const Vec3f &dir,
+        float &tNear, uint32_t &index, Vec2f &uv, Renderable **hitObject) {
+    *hitObject = nullptr;
 
+    for (auto &renderable : this->scene.renderables) {
+        float tNearK = INFINITY;
+        uint32_t indexK;
+        Vec2f uvK;
+        if (renderable->intersect(orig, dir, tNearK, indexK, uvK) && tNearK < tNear) {
+            *hitObject = renderable;
+            tNear = tNearK;
+            index = indexK;
+            uv = uvK;
+        }
+    }
 
+    return (*hitObject != nullptr);
+}
+
+Vec3f Raytracer::castRay(const Vec3f &orig, const Vec3f &dir, uint32_t depth) {
+    if (depth > MAX_RAY_DEPTH) {
+        return Vec3f(BACKGROUND);
+    }
+
+    Vec3f hitColor = Vec3f(BACKGROUND);
     float tnear = INFINITY;
+    Vec2f uv;
+    uint32_t index = 0;
+    Renderable *hitObject = nullptr;
+    auto bias = 0.00001;
+    if (trace(orig, dir, tnear, index, uv, &hitObject)) {
+        Vec3f hitPoint = orig + dir * tnear;
+        Vec3f N; // normal
+        Vec2f st; // st coordinates
+        hitObject->getSurfaceProperties(hitPoint, dir, index, uv, N, st);
 
-    for (Renderable *&sceneObject : scene.renderables) {
-        float t0 = INFINITY, t1 = INFINITY;
-
-        if (sceneObject->intersects(cameraPosition, rayDirection, t0, t1)) {
-            if (t0 < 0) t0 = t1;
-
-            if (t0 < tnear) {
-                tnear = t0;
-                renderable = *&sceneObject;
+        switch (hitObject->materialType) {
+            case REFLECTION_AND_REFRACTION: {
+                Vec3f reflectionDirection = normalize(reflect(dir, N));
+                Vec3f refractionDirection = normalize(refract(dir, N, hitObject->ior));
+                Vec3f reflectionRayOrig = (dotProduct(reflectionDirection, N) < 0) ?
+                                          hitPoint - N * bias :
+                                          hitPoint + N * bias;
+                Vec3f refractionRayOrig = (dotProduct(refractionDirection, N) < 0) ?
+                                          hitPoint - N * bias :
+                                          hitPoint + N * bias;
+                Vec3f reflectionColor = castRay(reflectionRayOrig, reflectionDirection, depth + 1);
+                Vec3f refractionColor = castRay(refractionRayOrig, refractionDirection, depth + 1);
+                float kr;
+                fresnel(dir, N, hitObject->ior, kr);
+                hitColor = reflectionColor * kr + refractionColor * (1 - kr);
+                break;
             }
-        }
-    }
+            case REFLECTION: {
+                float kr;
+                fresnel(dir, N, hitObject->ior, kr);
+                Vec3f reflectionDirection = reflect(dir, N);
+                Vec3f reflectionRayOrig = (dotProduct(reflectionDirection, N) < 0) ?
+                                          hitPoint + N * bias :
+                                          hitPoint - N * bias;
+                hitColor = castRay(reflectionRayOrig, reflectionDirection, depth + 1) * kr;
+                break;
+            }
+            default: {
+                Vec3f lightAmt = 0, specularColor = 0;
+                Vec3f shadowPointOrig = (dotProduct(dir, N) < 0) ?
+                                        hitPoint + N * bias :
+                                        hitPoint - N * bias;
 
-    if (!renderable ) return Vec3f(2);
-
-
-    Vec3f result = 0;
-
-    Vec3f hit = cameraPosition + rayDirection * tnear;
-    Vec3f normal = (hit - renderable->center).normalize();
-    bool inside = false;
-
-    float bias = 1e-4;
-
-    if (rayDirection.dot(normal) > 0) {
-        normal = -normal;
-        inside = true;
-    }
-
-    if ((renderable->opacity > 0 || renderable->reflectivity > 0) && depth < MAX_RAY_DEPTH) {
-        float facingratio = -rayDirection.dot(normal);
-        float fresneleffect = mix(static_cast<const float &>(pow(1 - facingratio, 3)), 1, 0.1);
-
-        Vec3f refldir = rayDirection - normal * 2 * rayDirection.dot(normal);
-        refldir.normalize();
-
-//        Vec3f reflection = renderable->reflectivity > 0 ? trace(hit + normal * bias, refldir, depth + 1) : 0;
-        Vec3f reflection = 0;
-        Vec3f refraction = 0;
-
-        if (renderable->opacity > 0) {
-            float ior = 1.1, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface?
-            float cosi = -normal.dot(rayDirection);
-            float k = 1 - eta * eta * (1 - cosi * cosi);
-            Vec3f refrdir = rayDirection * eta + normal * (eta *  cosi - sqrt(k));
-            refrdir.normalize();
-            refraction = trace(hit - normal * bias, refrdir, depth + 1);
-        }
-        // the result is a mix of reflection and refraction (if the sphere is transparent)
-        result = (reflection * fresneleffect + refraction * (1 - fresneleffect) * renderable->opacity) * renderable->color;
-    }
-
-    for (Light *&light : scene.lights) {
-        Vec3f transmission = 1;
-        Vec3f lightDirection = (light->position - hit).normalize();
-
-        for (Renderable *&sceneObject : scene.renderables) {
-            float t0, t1;
-            if (sceneObject->intersects(hit + normal * bias, lightDirection, t0, t1)) {
-                transmission = 0;
+                for (auto &light : this->scene.lights) {
+                    Vec3f lightDir = light->position - hitPoint;
+                    // square of the distance between hitPoint and the light
+                    float lightDistance2 = dotProduct(lightDir, lightDir);
+                    lightDir = normalize(lightDir);
+                    float LdotN = std::max(0.f, dotProduct(lightDir, N));
+                    Renderable *shadowHitObject = nullptr;
+                    float tNearShadow = INFINITY;
+                    // is the point in shadow, and is the nearest occluding object closer to the object than the light itself?
+                    bool inShadow =
+                            trace(shadowPointOrig, lightDir,  tNearShadow, index, uv, &shadowHitObject) &&
+                            tNearShadow * tNearShadow < lightDistance2;
+                    lightAmt += (1 - inShadow) * light->intensity * LdotN;
+                    Vec3f reflectionDirection = reflect(-lightDir, N);
+                    specularColor +=
+                            powf(std::max(0.f, -dotProduct(reflectionDirection, dir)), hitObject->specularExponent) *
+                                    light->intensity;
+                }
+                hitColor = lightAmt * hitObject->evalDiffuseColor(st) * hitObject->Kd + specularColor * hitObject->Ks;
                 break;
             }
         }
-
-        result += renderable->color * transmission *
-                  std::max(float(0), normal.dot(lightDirection)) * light->color * light->intencity;
     }
 
-    return result;
+    return hitColor;
 }
 
 
@@ -116,7 +133,7 @@ void Raytracer::render(std::vector<Vec3f> &image) {
                     Vec3f raydir(x, y, -1);
                     raydir.normalize();
 
-                    image[i * frameBufferWidth + j] = trace(camera.position, raydir, 0);
+                    image[i * frameBufferWidth + j] = castRay(camera.position, raydir, 0);
                 }
             }
         };

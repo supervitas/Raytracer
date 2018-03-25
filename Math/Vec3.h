@@ -52,6 +52,8 @@ public:
     Vec3<T>& operator += (const Vec3<T> &v) { x += v.x, y += v.y, z += v.z; return *this; }
     Vec3<T>& operator *= (const Vec3<T> &v) { x *= v.x, y *= v.y, z *= v.z; return *this; }
     Vec3<T> operator - () const { return Vec3<T>(-x, -y, -z); }
+    friend Vec3 operator * (const float &r, const Vec3<T> &v)
+    { return Vec3(v.x * r, v.y * r, v.z * r); }
 };
 
 typedef Vec3<float> Vec3f;

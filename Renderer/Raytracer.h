@@ -15,6 +15,7 @@
 #include "../TaskManager/TaskManager.h"
 
 #define MAX_RAY_DEPTH 5
+#define BACKGROUND 0.235294, 0.67451, 0.843137
 
 class Raytracer {
 private:
@@ -34,7 +35,8 @@ public:
     void render(std::vector<Vec3f> &image);
 
 private:
-    Vec3f trace(const Vec3f &cameraPosition, const Vec3f &rayDirection, const int &depth);
+    Vec3f castRay(const Vec3f &orig, const Vec3f &dir, uint32_t depth);
+    bool trace(const Vec3f &orig, const Vec3f &dir, float &tNear, uint32_t &index, Vec2f &uv, Renderable **hitObject);
 };
 
 

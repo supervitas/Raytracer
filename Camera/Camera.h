@@ -11,7 +11,6 @@
 class Camera {
 public:
     Vec3f position;
-    Vec3f direction;
     float fov;
     float angle;
 

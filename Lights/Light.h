@@ -11,11 +11,11 @@
 class Light {
 public:
     Vec3f position;
-    float intencity;
+    float intensity;
     Vec3f color;
-    Light(Vec3f position, float intensity, Vec3f color) {
+    Light(Vec3f position, float intensity = 1, Vec3f color = (255)) {
         this->position = position;
-        this->intencity = intensity;
+        this->intensity = intensity;
         this->color = Vec3f(color.x / 255, color.y / 255, color.z / 255);
     };
 };
