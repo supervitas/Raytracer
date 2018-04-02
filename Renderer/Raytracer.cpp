@@ -19,98 +19,25 @@ Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, 
     this->angle = camera.angle;
 }
 
-bool Raytracer::trace(
-        const Vec3f &orig, const Vec3f &dir,
-        float &tNear, uint32_t &index, Vec2f &uv, Renderable **hitObject) {
-    *hitObject = nullptr;
-
-    for (auto &renderable : this->scene.renderables) {
-        float tNearK = INFINITY;
-        uint32_t indexK;
-        Vec2f uvK;
-        if (renderable->intersect(orig, dir, tNearK, indexK, uvK) && tNearK < tNear) {
-            *hitObject = renderable;
-            tNear = tNearK;
-            index = indexK;
-            uv = uvK;
-        }
-    }
-
-    return (*hitObject != nullptr);
-}
-
-Vec3f Raytracer::castRay(const Vec3f &orig, const Vec3f &dir, uint32_t depth) {
-    if (depth > MAX_RAY_DEPTH) {
-        return Vec3f(BACKGROUND);
-    }
-
-    Vec3f hitColor = Vec3f(BACKGROUND);
-    float tnear = INFINITY;
-    Vec2f uv;
-    uint32_t index = 0;
+Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, uint32_t depth) {
+    auto hitColor = Vec3f(this->backgroundColor);
     Renderable *hitObject = nullptr;
-    auto bias = 0.00001;
-    if (trace(orig, dir, tnear, index, uv, &hitObject)) {
-        Vec3f hitPoint = orig + dir * tnear;
-        Vec3f N; // normal
-        Vec2f st; // st coordinates
-        hitObject->getSurfaceProperties(hitPoint, dir, index, uv, N, st);
 
-        switch (hitObject->materialType) {
-            case REFLECTION_AND_REFRACTION: {
-                Vec3f reflectionDirection = normalize(reflect(dir, N));
-                Vec3f refractionDirection = normalize(refract(dir, N, hitObject->ior));
-                Vec3f reflectionRayOrig = (dotProduct(reflectionDirection, N) < 0) ?
-                                          hitPoint - N * bias :
-                                          hitPoint + N * bias;
-                Vec3f refractionRayOrig = (dotProduct(refractionDirection, N) < 0) ?
-                                          hitPoint - N * bias :
-                                          hitPoint + N * bias;
-                Vec3f reflectionColor = castRay(reflectionRayOrig, reflectionDirection, depth + 1);
-                Vec3f refractionColor = castRay(refractionRayOrig, refractionDirection, depth + 1);
-                float kr;
-                fresnel(dir, N, hitObject->ior, kr);
-                hitColor = reflectionColor * kr + refractionColor * (1 - kr);
-                break;
-            }
-            case REFLECTION: {
-                float kr;
-                fresnel(dir, N, hitObject->ior, kr);
-                Vec3f reflectionDirection = reflect(dir, N);
-                Vec3f reflectionRayOrig = (dotProduct(reflectionDirection, N) < 0) ?
-                                          hitPoint + N * bias :
-                                          hitPoint - N * bias;
-                hitColor = castRay(reflectionRayOrig, reflectionDirection, depth + 1) * kr;
-                break;
-            }
-            default: {
-                Vec3f lightAmt = 0, specularColor = 0;
-                Vec3f shadowPointOrig = (dotProduct(dir, N) < 0) ?
-                                        hitPoint + N * bias :
-                                        hitPoint - N * bias;
+    float tNear = INFINITY;
+    float far = INFINITY;
+    for (auto &renderable : this->scene.renderables) {
+        if(renderable->intersect(orig, dir, tNear, far) && tNear > far) {
+            hitObject = renderable;
 
-                for (auto &light : this->scene.lights) {
-                    Vec3f lightDir = light->position - hitPoint;
-                    // square of the distance between hitPoint and the light
-                    float lightDistance2 = dotProduct(lightDir, lightDir);
-                    lightDir = normalize(lightDir);
-                    float LdotN = std::max(0.f, dotProduct(lightDir, N));
-                    Renderable *shadowHitObject = nullptr;
-                    float tNearShadow = INFINITY;
-                    // is the point in shadow, and is the nearest occluding object closer to the object than the light itself?
-                    bool inShadow =
-                            trace(shadowPointOrig, lightDir,  tNearShadow, index, uv, &shadowHitObject) &&
-                            tNearShadow * tNearShadow < lightDistance2;
-                    lightAmt += (1 - inShadow) * light->intensity * LdotN;
-                    Vec3f reflectionDirection = reflect(-lightDir, N);
-                    specularColor +=
-                            powf(std::max(0.f, -dotProduct(reflectionDirection, dir)), hitObject->specularExponent) *
-                                    light->intensity;
-                }
-                hitColor = lightAmt * hitObject->evalDiffuseColor(st) * hitObject->Kd + specularColor * hitObject->Ks;
-                break;
-            }
         }
+    }
+
+    if (depth > MAX_RAY_DEPTH) return hitColor;
+
+    auto bias = 0.00001;
+
+    if (hitObject) {
+        hitColor = hitObject->diffuseColor;
     }
 
     return hitColor;
@@ -133,7 +60,7 @@ void Raytracer::render(std::vector<Vec3f> &image) {
                     Vec3f raydir(x, y, -1);
                     raydir.normalize();
 
-                    image[i * frameBufferWidth + j] = castRay(camera.position, raydir, 0);
+                    image[i * frameBufferWidth + j] = trace(camera.position, raydir, 0);
                 }
             }
         };
@@ -142,4 +69,12 @@ void Raytracer::render(std::vector<Vec3f> &image) {
     }
 
     taskManager.waitAll();
+}
+
+void Raytracer::setBackgroundColor(Vec3f const &bc) {
+    this->backgroundColor = bc;
+}
+
+Vec3f const &Raytracer::bacgroundColor() const {
+    return this->backgroundColor;
 }

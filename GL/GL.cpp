@@ -141,11 +141,11 @@ void GL::setUpFullScreenQuad() {
             -1.0f, 1.0f, 0.0f,       1.0f, 0.0f, // vertex 1
             1.0f,-1.0f, 0.0f,       0.0f, 1.0f, // vertex 2
             -1.0f,-1.0f, 0.0f,       1.0f, 1.0f, // vertex 3
-    }; // 4 vertices with 5 components (floats) each
+    };
 
-    // fill with data
+
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 5, vertexData, GL_STATIC_DRAW);
-    // set up generic attrib pointers
+
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (char*)0 + 0*sizeof(GLfloat));
 
@@ -153,7 +153,6 @@ void GL::setUpFullScreenQuad() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(GLfloat), (char*)0 + 3*sizeof(GLfloat));
 
 
-    // generate and bind the index buffer object
     glGenBuffers(1, &ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
@@ -162,10 +161,8 @@ void GL::setUpFullScreenQuad() {
             2,1,3,
     };
 
-    // fill with data
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*2*3, indexData, GL_STATIC_DRAW);
 
-    // "unbind" vao
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*2*3, indexData, GL_STATIC_DRAW);
     glBindVertexArray(0);
 
     glGenTextures(1, &texture);
