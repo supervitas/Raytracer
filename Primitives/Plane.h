@@ -16,6 +16,8 @@ public:
 
     Plane(const Vec3f &center, const Vec3f &normal, Vec3f diffuse) :
             center(center), normal(normal) {
+        this->center = center;
+        this->normal = normal;
         diffuseColor = diffuse;
     }
 
@@ -23,13 +25,12 @@ public:
     bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, float &tFar) const override {
         auto denominator = this->normal.dot(dir);
 
-        tFar = 1;
-
         if (denominator > 1e-6) {
-            auto diff = this->center - orig;
-            auto t = diff.dot(this->normal) / denominator;
-
-            return t >= 0;
+            float t = (center - orig).dot(normal);
+            if (t >= 0) {
+                tFar = t;
+                return true;
+            }
 
         }
 

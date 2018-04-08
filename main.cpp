@@ -7,6 +7,7 @@
 #include "TaskManager/TaskManager.h"
 #include "Lights/Light.h"
 #include "Primitives/Plane.h"
+#include "Primitives/Box.h"
 
 
 int main() {
@@ -19,19 +20,23 @@ int main() {
     auto raytracer = std::make_unique<Raytracer>(gl->frameBufferWidth, gl->frameBufferHeight, *scene, *camera, *taskManager);
 
 
-    auto sphere = std::make_unique<Sphere>(Vec3f(0, 0, -25), 6, Vec3f(0.7, 0.2, 0.6));
-    auto sphere2 = std::make_unique<Sphere>(Vec3f(-2, 0, -25), 6, Vec3f(0.3, 0.5, 0.9));
+    auto sphere = std::make_unique<Sphere>(Vec3f(0, 5, -25), 6, Vec3f(0.7, 0.2, 0.6));
+    auto sphere2 = std::make_unique<Sphere>(Vec3f(-2, 5, -25), 6, Vec3f(0.3, 0.5, 0.9));
+    auto box = std::make_unique<Box>(Vec3f(0, 0, -5), Vec3f(1, 1, -10), Vec3f(0.1, 0.1, 0.1));
 
-    auto plane = std::make_unique<Plane>(Vec3f(0, 0, 0), Vec3f(0, -1.f, 0), Vec3f(0.2, 0.2, 0.2));
+
+
+    auto plane = std::make_unique<Plane>(Vec3f(0, 0, 0), Vec3f(0, -0.2, 0), Vec3f(0.2, 0.2, 0.2));
 
     auto light = std::make_unique<Light>(Vec3f(-20, 70, 20), 0.5);
     auto light2 = std::make_unique<Light>(Vec3f(30, 50, -12), 1);
 
 
-    scene->Add(*plane);
+//    scene->Add(*plane);
 
     scene->Add(*sphere);
     scene->Add(*sphere2);
+    scene->Add(*box);
 
 
     scene->AddLight(*light);

@@ -28,7 +28,6 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, uint32_t depth) {
     for (auto &renderable : this->scene.renderables) {
         if(renderable->intersect(orig, dir, tNear, far) && tNear > far) {
             hitObject = renderable;
-
         }
     }
 
