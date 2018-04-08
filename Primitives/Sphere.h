@@ -21,7 +21,7 @@ public:
     }
 
 
-    bool  intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, float &tFar) const {
+    bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, float &tFar) const override {
         Vec3f L = orig - center;
         float a = dir.dot(dir);
         float b = 2 * dir.dot(L);

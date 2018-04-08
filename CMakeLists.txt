@@ -15,7 +15,7 @@ endif()
 set(SOURCE_FILES main.cpp GL/GL.cpp GL/GL.h Math/Vec3.h Primitives/Sphere.h
         Renderer/Raytracer.h Renderer/Raytracer.cpp Camera/Camera.cpp Camera/Camera.h
         Scene/Scene.cpp Scene/Scene.h Primitives/Renderable.h
-        TaskManager/TaskManager.cpp TaskManager/TaskManager.h Lights/Light.cpp Lights/Light.h Math/Vec2.h)
+        TaskManager/TaskManager.cpp TaskManager/TaskManager.h Lights/Light.cpp Lights/Light.h Math/Vec2.h Primitives/Plane.h Primitives/Plane.h)
 
 
 add_executable(Raytracer ${SOURCE_FILES})
