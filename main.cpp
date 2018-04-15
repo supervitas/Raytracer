@@ -21,14 +21,14 @@ int main() {
 
     auto sphere = std::make_unique<Sphere>(Vec3f(0, 5, -25), 6, Vec3f(0.7, 0.2, 0.6));
     auto sphere2 = std::make_unique<Sphere>(Vec3f(-2, 5, -25), 6, Vec3f(0.3, 0.5, 0.9));
-    auto box = std::make_unique<Box>(Vec3f(0, 0, -5), Vec3f(-2, 1, -10), Vec3f(0.31, 0.21, 0.15));
+    auto box = std::make_unique<Box>(Vec3f(1, -1, -5), Vec3f(-1, 0, -10), Vec3f(0.31, 0.21, 0.15));
 
 
 
     auto plane = std::make_unique<Box>(Vec3f(8, -3, 0), Vec3f(-8, -2, -25), Vec3f(0.5, 0.7, 0.9));
 
-    auto light = std::make_unique<Light>(Vec3f(-20, 70, 20), 0.5);
-    auto light2 = std::make_unique<Light>(Vec3f(30, 50, -12), 1);
+    auto light = std::make_unique<Light>(Vec3f(0, 50, -50), 0.9);
+    auto light2 = std::make_unique<Light>(Vec3f(0, 10, 0), 1);
 
 
     scene->Add(*plane);

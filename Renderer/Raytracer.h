@@ -35,7 +35,7 @@ public:
     void render(std::vector<Vec3f> &image);
 
 private:
-    Vec3f trace(const Vec3f &orig, const Vec3f &dir, uint32_t depth);
+    Vec3f trace(const Vec3f &orig, const Vec3f &dir, int depth);
 
 public:
     void setBackgroundColor(Vec3f const &bc);

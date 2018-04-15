@@ -11,12 +11,17 @@ class Box : public Renderable {
 public:
     Vec3f min;
     Vec3f max;
+    Vec3f center;
 
     Box(const Vec3f &min, const Vec3f &max, Vec3f diffuse) :
             min(min), max(max) {
         diffuseColor = diffuse;
+        center.set(max.x / 2, max.y / 2, max.z / 2);
     }
 
+    void getSurfaceData(const Vec3f &hit, Vec3f &normal) const override {
+        normal = (hit - center).normalize();
+    }
 
     bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, float &tFar) const override {
         Vec3f dirfrac = Vec3f();

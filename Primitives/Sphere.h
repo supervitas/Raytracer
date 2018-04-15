@@ -20,6 +20,9 @@ public:
         diffuseColor = diffuse;
     }
 
+    void getSurfaceData(const Vec3f &hit, Vec3f &normal) const override {
+        normal = (hit - center).normalize();
+    }
 
     bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, float &tFar) const override {
         Vec3f L = orig - center;

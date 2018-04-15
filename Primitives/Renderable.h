@@ -13,7 +13,7 @@ class Renderable {
 public:
     Renderable() : ior(1.3), Kd(0.8), Ks(0.2), diffuseColor(0.2), specularExponent(25) {}
     virtual ~Renderable() = default;
-
+    virtual void getSurfaceData(const Vec3f &hit, Vec3f &normal) const = 0;
     virtual bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, float &tFar) const = 0;
 
     float ior;

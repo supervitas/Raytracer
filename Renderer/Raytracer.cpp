@@ -19,8 +19,11 @@ Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, 
     this->angle = camera.angle;
 }
 
-Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, uint32_t depth) {
+Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
     auto hitColor = Vec3f(this->backgroundColor);
+
+    if (depth > MAX_RAY_DEPTH) return hitColor;
+
     Renderable *hitObject = nullptr;
 
     float tNear = INFINITY;
@@ -31,15 +34,40 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, uint32_t depth) {
         }
     }
 
-    if (depth > MAX_RAY_DEPTH) return hitColor;
+
+    if (!hitObject) return hitColor;
 
     auto bias = 0.00001;
+    Vec3f hitPoint = orig + dir * tNear;
+    Vec3f normal;
 
-    if (hitObject) {
-        hitColor = hitObject->diffuseColor;
+    hitColor = 0;
+
+    hitObject->getSurfaceData(hitPoint, normal);
+
+    Vec3f shadowPointOrig = dir.dot(normal) < 0 ?
+                            hitPoint + normal * bias :
+                            hitPoint - normal * bias;
+
+
+    for (auto &light : this->scene.lights) {
+        auto lightDirection = (light->position - hitPoint).normalize();
+        bool shadow = false;
+
+        for (auto &renderable : this->scene.renderables) {
+            float t0, t1;
+            if (renderable->intersect(shadowPointOrig, lightDirection, t0, t1)) {
+                shadow = true;
+                break;
+            }
+        }
+
+        hitColor += hitObject->diffuseColor * shadow * std::max(float(0), normal.dot(lightDirection)) * light->intensity;
+
     }
 
-    return hitColor;
+    return  hitColor;
+
 }
 
 
