@@ -34,12 +34,15 @@ public:
 
         if (discriminant < 0) return false;
 
+
+
         if (discriminant == 0)  {
             tNear = tFar = static_cast<float>(-0.5 * b / a);
         } else {
             float q = (b > 0) ?
                       -0.5 * (b + sqrt(discriminant)) :
                       -0.5 * (b - sqrt(discriminant));
+
             tNear = q / a;
             tFar = c / q;
         }
