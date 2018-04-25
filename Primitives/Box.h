@@ -34,7 +34,7 @@ public:
         normal.set(x,y,z).normalize();
     }
 
-    bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, float &tFar) const override {
+    bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear) const override {
 
         Vec3f dirfrac = Vec3f();
         dirfrac.x = 1.0f / dir.x;

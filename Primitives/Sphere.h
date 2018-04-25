@@ -24,7 +24,7 @@ public:
         normal = (hit - center).normalize();
     }
 
-    bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear, float &tFar) const override {
+    bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear) const override {
         Vec3f L = orig - center;
         float a = dir.dot(dir);
         float b = 2 * dir.dot(L);
@@ -35,17 +35,26 @@ public:
         if (discriminant < 0) return false;
 
 
-
+        float t0, t1;
         if (discriminant == 0)  {
-            tNear = tFar = static_cast<float>(-0.5 * b / a);
+            t0 = t1 = static_cast<float>(-0.5 * b / a);
         } else {
             float q = (b > 0) ?
                       -0.5 * (b + sqrt(discriminant)) :
                       -0.5 * (b - sqrt(discriminant));
 
-            tNear = q / a;
-            tFar = c / q;
+            t0 = q / a;
+            t1 = c / q;
         }
+
+        if (t0 > t1) std::swap(t0, t1);
+
+        if (t0 < 0) {
+            t0 = t1; // if t0 is negative, let's use t1 instead
+            if (t0 < 0) return false; // both t0 and t1 are negative
+        }
+
+        tNear = t0;
 
         return true;
     }

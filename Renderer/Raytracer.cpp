@@ -29,7 +29,7 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
     float tNear = INFINITY;
     for (auto &renderable : this->scene.renderables) {
         float near = 0;
-        if(renderable->intersect(orig, dir, near, near) && tNear > near) {
+        if(renderable->intersect(orig, dir, near) && tNear > near) {
             hitObject = renderable;
             tNear = near;
         }
@@ -57,8 +57,7 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
         bool inLight = true;
 
         for (auto &renderable : this->scene.renderables) {
-            float far = INFINITY;
-            if (renderable->intersect(shadowPointOrig, lightDirection, tNear, far)) {
+            if (renderable->intersect(shadowPointOrig, lightDirection, tNear)) {
                 inLight = false;
                 break;
             }
