@@ -15,9 +15,12 @@ public:
     float diametr;
     float radius;
 
-    Sphere(const Vec3f &center, const float &radius, Vec3f diffuse) :
+    Sphere(const Vec3f &center, const float &radius, Vec3f diffuse, float reflection = 0, float refraction = 0) :
             center(center), radius(radius), diametr(radius * radius) {
-        diffuseColor = diffuse;
+
+        this->diffuseColor = diffuse;
+        this->reflection = reflection;
+        this->refraction = refraction;
     }
 
     void getSurfaceData(const Vec3f &hit, Vec3f &normal) const override {

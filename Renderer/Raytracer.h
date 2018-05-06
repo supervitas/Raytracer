@@ -40,6 +40,12 @@ private:
 public:
     void setBackgroundColor(Vec3f const &bc);
     Vec3f const& bacgroundColor() const;
+
+    void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr);
+
+    Vec3f reflect(const Vec3f &I, const Vec3f &N);
+
+    Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior);
 };
 
 

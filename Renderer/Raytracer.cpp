@@ -1,8 +1,6 @@
 //
 // Created by Виталий on 12.12.2017.
 //
-
-#include <thread>
 #include "Raytracer.h"
 
 
@@ -46,30 +44,58 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
 
     hitObject->getSurfaceData(hitPoint, normal);
 
+    auto bias = 1;
 
-    Vec3f shadowPointOrig = dir.dot(normal) < 0 ?
-                            hitPoint + normal :
-                            hitPoint - normal;
+    if (hitObject->reflection > 0 && hitObject->refraction == 0) {
+        float kr;
+        fresnel(dir, normal, hitObject->ior, kr);
+        Vec3f reflectionDirection = reflect(dir, normal);
+        Vec3f reflectionRayOrig = (reflectionDirection.dot(normal) < 0) ?
+                                  hitPoint + normal * bias :
+                                  hitPoint - normal * bias;
 
+        hitColor = trace(reflectionRayOrig, reflectionDirection, depth + 1) * kr;
+    }
 
+    if (hitObject->reflection > 0 && hitObject->refraction > 0) {
+        Vec3f reflectionDirection = reflect(dir, normal).normalize();
+        Vec3f refractionDirection = refract(dir, normal, hitObject->ior);
+        Vec3f reflectionRayOrig = (reflectionDirection.dot(normal) < 0) ?
+                                  hitPoint - normal * bias :
+                                  hitPoint + normal * bias;
 
+        Vec3f refractionRayOrig = (refractionDirection.dot(normal) < 0) ?
+                                  hitPoint - normal * bias :
+                                  hitPoint + normal * bias;
+        Vec3f reflectionColor = trace(reflectionRayOrig, reflectionDirection, depth + 1);
+        Vec3f refractionColor = trace(refractionRayOrig, refractionDirection, depth + 1);
 
-    for (auto &light : this->scene.lights) {
-        auto lightDirection = (light->position - hitPoint).normalize();
-        bool inLight = true;
+        float kr;
+        fresnel(dir, normal, hitObject->ior, kr);
+        hitColor = reflectionColor * kr + refractionColor * (1 - kr);
 
-        for (auto &renderable : this->scene.renderables) {
-            if (renderable->intersect(shadowPointOrig, lightDirection, tNear)) {
-                inLight = false;
-                break;
+    }
+
+        Vec3f shadowPointOrig = dir.dot(normal) < 0 ? hitPoint + normal * bias : hitPoint - normal * bias;
+
+        for (auto &light : this->scene.lights) {
+            auto lightDirection = (light->position - hitPoint).normalize();
+            bool inLight = true;
+
+            for (auto &renderable : this->scene.renderables) {
+                if (renderable->intersect(shadowPointOrig, lightDirection, tNear)) {
+                    inLight = false;
+                    break;
+                }
             }
-        }
 
-        Vec3f lightAmt = (1 - !inLight) * light->intensity * std::max(float(0), lightDirection.dot(normal));
+            Vec3f lightAmt = (1 - !inLight) * light->intensity * std::max(float(0), lightDirection.dot(normal));
 
-        Vec3f specularColor = powf(std::max(float(0), normal.dot(lightDirection)), hitObject->specularExponent) * light->intensity;
+            Vec3f specularColor = powf(std::max(float(0), normal.dot(lightDirection)), hitObject->specularExponent) *
+                                  light->intensity;
 
-        hitColor += lightAmt * hitObject->diffuseColor * hitObject->Kd + specularColor * hitObject->Ks;
+            hitColor += lightAmt * hitObject->diffuseColor * hitObject->Kd + specularColor * hitObject->Ks;
+
 
     }
 
@@ -102,6 +128,43 @@ void Raytracer::render(std::vector<Vec3f> &image) {
     }
 
     taskManager.waitAll();
+}
+
+float clamp(const float &lo, const float &hi, const float &v) { return std::max(lo, std::min(hi, v)); }
+
+Vec3f Raytracer::reflect(const Vec3f &I, const Vec3f &N) {
+    return I - 2 * I.dot(N) * N;
+}
+
+Vec3f Raytracer::refract(const Vec3f &I, const Vec3f &N, const float &ior) {
+    float cosi = clamp(-1, 1, I.dot(N));
+    float etai = 1, etat = ior;
+    Vec3f n = N;
+    if (cosi < 0) { cosi = -cosi; } else { std::swap(etai, etat); n= -N; }
+    float eta = etai / etat;
+    float k = 1 - eta * eta * (1 - cosi * cosi);
+    return k < 0 ? 0 : eta * I + (eta * cosi - sqrtf(k)) * n;
+}
+
+
+void Raytracer::fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr) {
+    float cosi = clamp(-1, 1, I.dot(N));
+    float etai = 1, etat = ior;
+    if (cosi > 0) {  std::swap(etai, etat); }
+    // Compute sini using Snell's law
+    float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi));
+    // Total internal reflection
+    if (sint >= 1) {
+        kr = 1;
+    } else {
+        float cost = sqrtf(std::max(0.f, 1 - sint * sint));
+        cosi = fabsf(cosi);
+        float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+        float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+        kr = (Rs * Rs + Rp * Rp) / 2;
+    }
+    // As a consequence of the conservation of energy, transmittance is given by:
+    // kt = 1 - kr;
 }
 
 void Raytracer::setBackgroundColor(Vec3f const &bc) {
