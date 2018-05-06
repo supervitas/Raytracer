@@ -38,7 +38,7 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
 
     if (!hitObject) return hitColor;
 
-    auto bias = 0.00001;
+
     Vec3f hitPoint = orig + dir * tNear;
     Vec3f normal;
 
@@ -48,8 +48,10 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
 
 
     Vec3f shadowPointOrig = dir.dot(normal) < 0 ?
-                            hitPoint + normal * bias :
-                            hitPoint - normal * bias;
+                            hitPoint + normal :
+                            hitPoint - normal;
+
+
 
 
     for (auto &light : this->scene.lights) {
@@ -63,13 +65,15 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
             }
         }
 
-        hitColor += hitObject->diffuseColor * inLight * std::max(float(0), normal.dot(lightDirection)) * light->intensity;
+        Vec3f lightAmt = (1 - !inLight) * light->intensity * std::max(float(0), lightDirection.dot(normal));
+
+        Vec3f specularColor = powf(std::max(float(0), normal.dot(lightDirection)), hitObject->specularExponent) * light->intensity;
+
+        hitColor += lightAmt * hitObject->diffuseColor * hitObject->Kd + specularColor * hitObject->Ks;
 
     }
 
-
     return  hitColor;
-
 }
 
 
