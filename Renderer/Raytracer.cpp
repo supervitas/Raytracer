@@ -44,39 +44,40 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
 
     hitObject->getSurfaceData(hitPoint, normal);
 
-    auto bias = 1;
+    auto bias = 0.001;
 
-    if (hitObject->reflection > 0 && hitObject->refraction == 0) {
+    if (hitObject->reflection > 0 || hitObject->refraction > 0) {
+
+        Vec3f reflectionColor = 0;
+        Vec3f refractionColor = 0;
+
+        if (hitObject->reflection > 0) {
+            Vec3f reflectionDirection = reflect(dir, normal).normalize();
+            Vec3f reflectionRayOrig = (reflectionDirection.dot(normal) < 0) ?
+                                      hitPoint - normal * bias :
+                                      hitPoint + normal * bias;
+            reflectionColor = trace(reflectionRayOrig, reflectionDirection, depth + 1) * hitObject->reflection * hitObject->diffuseColor;
+        }
+
+        if (hitObject->refraction > 0) {
+            Vec3f refractionDirection = refract(dir, normal, hitObject->ior).normalize();
+            Vec3f refractionRayOrig = (refractionDirection.dot(normal) < 0) ?
+                                      hitPoint - normal * bias :
+                                      hitPoint + normal * bias;
+
+            refractionColor = trace(refractionRayOrig, refractionDirection, depth + 1) * hitObject->refraction;
+        }
+
+
         float kr;
         fresnel(dir, normal, hitObject->ior, kr);
-        Vec3f reflectionDirection = reflect(dir, normal);
-        Vec3f reflectionRayOrig = (reflectionDirection.dot(normal) < 0) ?
-                                  hitPoint + normal * bias :
-                                  hitPoint - normal * bias;
 
-        hitColor = trace(reflectionRayOrig, reflectionDirection, depth + 1) * kr;
-    }
-
-    if (hitObject->reflection > 0 && hitObject->refraction > 0) {
-        Vec3f reflectionDirection = reflect(dir, normal).normalize();
-        Vec3f refractionDirection = refract(dir, normal, hitObject->ior);
-        Vec3f reflectionRayOrig = (reflectionDirection.dot(normal) < 0) ?
-                                  hitPoint - normal * bias :
-                                  hitPoint + normal * bias;
-
-        Vec3f refractionRayOrig = (refractionDirection.dot(normal) < 0) ?
-                                  hitPoint - normal * bias :
-                                  hitPoint + normal * bias;
-        Vec3f reflectionColor = trace(reflectionRayOrig, reflectionDirection, depth + 1);
-        Vec3f refractionColor = trace(refractionRayOrig, refractionDirection, depth + 1);
-
-        float kr;
-        fresnel(dir, normal, hitObject->ior, kr);
         hitColor = reflectionColor * kr + refractionColor * (1 - kr);
 
-    }
-
-        Vec3f shadowPointOrig = dir.dot(normal) < 0 ? hitPoint + normal * bias : hitPoint - normal * bias;
+    } else {
+        Vec3f shadowPointOrig = (dir.dot(normal) < 0 ) ?
+                hitPoint + normal * bias :
+                hitPoint - normal * bias;
 
         for (auto &light : this->scene.lights) {
             auto lightDirection = (light->position - hitPoint).normalize();
@@ -95,8 +96,7 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
                                   light->intensity;
 
             hitColor += lightAmt * hitObject->diffuseColor * hitObject->Kd + specularColor * hitObject->Ks;
-
-
+        }
     }
 
     return  hitColor;

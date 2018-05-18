@@ -6,7 +6,6 @@
 #define RAYTRACER_RAYTRACER_H
 
 #include <algorithm>
-#include <fstream>
 #include <vector>
 #include "../Math/Vec3.h"
 #include "../Primitives/Sphere.h"
@@ -33,18 +32,14 @@ private:
 public:
     Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &scene, Camera &camera,  TaskManager &taskManager);
     void render(std::vector<Vec3f> &image);
+    void setBackgroundColor(Vec3f const &bc);
+    Vec3f const& bacgroundColor() const;
 
 private:
     Vec3f trace(const Vec3f &orig, const Vec3f &dir, int depth);
 
-public:
-    void setBackgroundColor(Vec3f const &bc);
-    Vec3f const& bacgroundColor() const;
-
     void fresnel(const Vec3f &I, const Vec3f &N, const float &ior, float &kr);
-
     Vec3f reflect(const Vec3f &I, const Vec3f &N);
-
     Vec3f refract(const Vec3f &I, const Vec3f &N, const float &ior);
 };
 
