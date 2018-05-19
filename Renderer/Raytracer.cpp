@@ -44,7 +44,7 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
 
     hitObject->getSurfaceData(hitPoint, normal);
 
-    auto bias = 0.001;
+    auto bias = 1e-4;
 
     if (hitObject->reflection > 0 || hitObject->refraction > 0) {
 

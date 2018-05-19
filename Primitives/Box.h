@@ -5,7 +5,6 @@
 #ifndef RAYTRACER_BOX_H
 #define RAYTRACER_BOX_H
 
-
 #include "Renderable.h"
 
 class Box : public Renderable {
@@ -14,24 +13,39 @@ public:
     Vec3f max;
     Vec3f center;
 
+    Vec3f size;
+
     Box(const Vec3f &min, const Vec3f &max, Vec3f diffuse) :
             min(min), max(max) {
         diffuseColor = diffuse;
         center = (min + max) * 0.5;
+        size.set(max.x - min.x, max.y - min.y, max.z - min.z);
     }
 
     void getSurfaceData(const Vec3f &hit, Vec3f &normal) const override {
-        auto p = (hit - center);
+        auto localPoint = hit - center;
+        float min = std::numeric_limits<float>::max();
 
-        auto d = (min - max) * 0.5;
+        float distance = std::abs(size.x - std::abs(localPoint.x));
 
-        auto bias = 0.5000001;
+        if (distance < min) {
+            min = distance;
+            normal.set(localPoint.x > 0 ? 1 : -1, 0, 0);
+        }
 
-        auto y = static_cast<int>(std::round((p.y / std::abs(d.y)) * bias));
-        auto x = static_cast<int>(std::round((p.x / std::abs(d.x)) * bias));
-        auto z = static_cast<int>(std::round((p.z / std::abs(d.z)) * bias));
+        distance = std::abs(size.y - std::abs(localPoint.y));
 
-        normal.set(x,y,z).normalize();
+        if (distance < min) {
+            min = distance;
+            normal.set(0, localPoint.y > 0 ? 1 : -1, 0);
+        }
+
+        distance = std::abs(size.z - std::abs(localPoint.z));
+
+        if (distance < min) {
+            min = distance;
+            normal.set(0, 0, localPoint.z > 0 ? 1 : -1);
+        }
     }
 
     bool intersect(const Vec3f &orig, const Vec3f &dir, float &tNear) const override {
