@@ -6,11 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-if (GLEW_FOUND)
-    include_directories(${GLEW_INCLUDE_DIRS})
-    link_libraries(${GLEW_LIBRARIES})
-endif()
+
+
+include(build/conanbuildinfo.cmake)
+conan_basic_setup()
+
 
 set(SOURCE_FILES main.cpp GL/GL.cpp GL/GL.h Math/Vec3.h Primitives/Sphere.h
         Renderer/Raytracer.h Renderer/Raytracer.cpp Camera/Camera.cpp Camera/Camera.h
@@ -20,5 +20,4 @@ set(SOURCE_FILES main.cpp GL/GL.cpp GL/GL.h Math/Vec3.h Primitives/Sphere.h
 
 add_executable(Raytracer ${SOURCE_FILES})
 
-
-target_link_libraries(Raytracer glfw ${GLFW_LIBRARIES} ${OPENGL_LIBRARY})
+target_link_libraries(Raytracer ${CONAN_LIBS})

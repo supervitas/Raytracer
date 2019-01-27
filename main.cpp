@@ -44,7 +44,7 @@ int main() {
 
 
     std::vector<Vec3f> image;
-    image.reserve(gl->frameBufferWidth * gl->frameBufferHeight);
+    image.reserve(static_cast<u_int32_t>(gl->frameBufferWidth * gl->frameBufferHeight));
 
     while (!glfwWindowShouldClose(gl->window)) {
         raytracer->render(image);
