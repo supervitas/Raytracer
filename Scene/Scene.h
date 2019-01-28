@@ -11,12 +11,14 @@
 #include "../Lights/Light.h"
 
 class Scene {
+private:
+    std::vector<std::unique_ptr<Light>> lights;
+    std::vector<std::unique_ptr<Renderable>> renderables;
 public:
-    std::vector<Light*> lights;
-    std::vector<Renderable*> renderables;
-
-    void Add(Renderable &renderable);
-    void AddLight(Light &light);
+    std::vector<std::unique_ptr<Renderable>> const&  Renderables();
+    std::vector<std::unique_ptr<Light>> const& Lights();
+    void Add(std::unique_ptr<Renderable> renderable);
+    void AddLight(std::unique_ptr<Light> light);
 };
 
 

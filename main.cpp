@@ -32,15 +32,15 @@ int main() {
     auto light2 = std::make_unique<Light>(Vec3f(0, 50, -13), 1);
 
 
-    scene->Add(*plane);
+    scene->Add(std::move(plane));
 
-    scene->Add(*sphere);
-    scene->Add(*sphere2);
-    scene->Add(*sphere3);
+    scene->Add(std::move(sphere));
+    scene->Add(std::move(sphere2));
+    scene->Add(std::move(sphere3));
 
 
-    scene->AddLight(*light);
-    scene->AddLight(*light2);
+    scene->AddLight(std::move(light));
+    scene->AddLight(std::move(light2));
 
 
     std::vector<Vec3f> image;

@@ -10,9 +10,9 @@ Raytracer::Raytracer(int frameBufferWidth, int frameBufferHeight, Scene &Scene, 
     this->frameBufferHeight = frameBufferHeight;
     this->frameBufferWidth = frameBufferWidth;
 
-    this->aspectRatio = frameBufferWidth / frameBufferHeight;
-    this->invHeight = 1 / static_cast<float>(frameBufferHeight);
-    this->invWidth = 1 / static_cast<float>(frameBufferWidth);
+    this->aspectRatio = static_cast<float> (frameBufferWidth) / frameBufferHeight;
+    this->invHeight = 1 / static_cast<float> (frameBufferHeight);
+    this->invWidth = 1 / static_cast<float> (frameBufferWidth);
 
     this->angle = camera.angle;
 }
@@ -25,10 +25,11 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
     Renderable *hitObject = nullptr;
 
     float tNear = INFINITY;
-    for (auto &renderable : this->scene.renderables) {
+
+    for (auto const& renderable : this->scene.Renderables()) {
         float near = 0;
         if(renderable->intersect(orig, dir, near) && tNear > near) {
-            hitObject = renderable;
+            hitObject = renderable.get();
             tNear = near;
         }
     }
@@ -79,11 +80,11 @@ Vec3f Raytracer::trace(const Vec3f &orig, const Vec3f &dir, int depth) {
                 hitPoint + normal * bias :
                 hitPoint - normal * bias;
 
-        for (auto &light : this->scene.lights) {
+        for (auto &light : this->scene.Lights()) {
             auto lightDirection = (light->position - hitPoint).normalize();
             bool inLight = true;
 
-            for (auto &renderable : this->scene.renderables) {
+            for (auto &renderable : this->scene.Renderables()) {
                 if (renderable->intersect(shadowPointOrig, lightDirection, tNear)) {
                     inLight = false;
                     break;
