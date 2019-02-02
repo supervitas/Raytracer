@@ -74,3 +74,5 @@ cmake-build-debug/
 out/
 
 .idea/*
+build/
+bin/

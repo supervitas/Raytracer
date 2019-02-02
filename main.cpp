@@ -8,7 +8,6 @@
 #include "Lights/Light.h"
 #include "Primitives/Box.h"
 
-
 int main() {
     auto taskManager = std::make_unique<TaskManager>();
 

@@ -14,10 +14,10 @@ void Scene::AddLight(std::unique_ptr<Light> light) {
     lights.push_back(std::move(light));
 }
 
-std::vector<std::unique_ptr<Renderable>> const&  Scene::Renderables() {
+std::vector<std::unique_ptr<Renderable>> const& Scene::Renderables() {
     return renderables;
 }
 
-std::vector<std::unique_ptr<Light>> const&  Scene::Lights() {
+std::vector<std::unique_ptr<Light>> const& Scene::Lights() {
     return lights;
 }
